@@ -6,40 +6,40 @@ Advanced C & C++ Compiling
 Linux process virtual memory mapping scheme
 -------------------------------------------
 
-    Typical Linux process memory map：
+Typical Linux process memory map:
 	
-    -----------------------------------------------------------
-    SYSTEM          operating system functionality for
-                    controlling the program execution
-    -----------------------------------------------------------
-                    environment variables
-                    argv(list of command line arguments)
-                    argc(number of command line arguments)
-    STACK
-                    local variables for main() function
-                    local variables for other function
-    -----------------------------------------------------------
-                                   |  |
-                                   \  /
-                                    \/
-    -----------------------------------------------------------
-    SHARED          functions from linked dynamic libraries
-    MEMORY
-    -----------------------------------------------------------
-                                    /\
-                                   /  \
-                                   |  |
-    -----------------------------------------------------------
-    HEAP
-    -----------------------------------------------------------
-    DATA            initialized data
-                    uninitialized data
-    -----------------------------------------------------------
-    TEXT            functions from linked static libraries
-                    other program functions
-                    main function(main.o)
-                    startup routines(crt0.o)
-    0x00000000-------------------------------------------------
+    +--------------+------------------------------------------+
+    |SYSTEM        | operating system functionality for       |
+    |              | controlling the program execution        |
+    +--------------+------------------------------------------+
+    |              | environment variables                    |
+    |              | argv(list of command line arguments)     |
+    |              | argc(number of command line arguments)   |
+    |STACK         |                                          |
+    |              | local variables for main() function      |
+    |              | local variables for other function       |
+    |              |                                          |
+    |              |                 |  |                     |
+    |              |                 \  /                     |
+    |              |                  \/                      |
+    +--------------+------------------------------------------+
+    |SHARED        | functions from linked dynamic libraries  |
+    |MEMORY        |                                          |
+    +--------------+------------------------------------------+
+    |              |                  /\                      |
+    |              |                 /  \                     |
+    |              |                 |  |                     |
+    |              |                                          |
+    |HEAP          |                                          |
+    +--------------+------------------------------------------+
+    |DATA          | initialized data                         |
+    |              | uninitialized data                       |
+    +--------------+------------------------------------------+
+    |TEXT          | functions from linked static libraries   |
+    |              | other program functions                  |
+    |              | main function(main.o)                    |
+    |              | startup routines(crt0.o)                 |
+    +0x00000000----+------------------------------------------+
 
 
 The Stages of Compiling
