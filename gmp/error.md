@@ -77,3 +77,29 @@ The expected output is `0.032258`.
 
 Note: The L modifier has been standard for a long time (it was added
 in ISO C89).
+
+Errorneous "localeconv"
+-----------------------
+
+Error information when `make check`
+
+    lib/libmsvcrt.a(dxrobs01029.o):(.text+0x0): 
+    multiple definition of 'localeconv'
+    t-locale.o:t-locale.c:(.text+0x0): first defined here
+
+It's a confliction between MinGW runtime library & gmp source code, get
+rid of this error by wrapping the redefinition of localeconv:
+
+    #ifndef __MINGW64__
+    #if HAVE_LOCALECONV
+    struct lconv *
+    localeconv (void)
+    {
+        static struct lconv  l;
+        l.decimal_point = point_string;
+        return &l;
+    }
+    #endif
+    #endif
+
+
