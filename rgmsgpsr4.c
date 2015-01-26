@@ -1,3 +1,7 @@
+/**
+ * Command line to build under MinGW-W64
+ * gcc -g rgmsgpsr4.c -o psr.exe -lws2_32
+ */
 #if ___STDC_VERSION__ >= 199901L
 #include <stdint.h>
 #else
@@ -35,12 +39,12 @@ typedef enum {
 } RGMSG_MESSAGE_STATE;
 
 typedef struct rg_msg {
-	unsigned char mode;
-	unsigned short int  seq;
-	unsigned short int  port;
-	unsigned short int  len;  // in para
-	unsigned short int  command;
-	unsigned char  para[64];
+    unsigned char mode;
+    unsigned short int  seq;
+    unsigned short int  port;
+    unsigned short int  len;  // in para
+    unsigned short int  command;
+    unsigned char  para[64];
 } rg_msg;
 
 struct rgmsg_parser {
@@ -64,6 +68,9 @@ struct rgmsg_parser_counter {
     size_t text_size;           /* text string buffer size */
 };
 
+/* Parser options */
+#define PSR_ENTRY_APPEND_NULL    (1<<1)
+
 /* Error Codes */
 #define PSR_SUCCESS          0
 #define PSR_EPARSE           1   /* Parse error in strict mode */
@@ -79,8 +86,6 @@ struct rgmsg_parser_counter {
 #define CHAR_LF              0x0a
 #define CHAR_VLINE           0x7c
 
-#define PSR_ENTRY_APPEND_NULL    (1<<2)
-
 #define PSR_ENTRIES          5   /* Number of entries in a message */
 
 struct rgmsg_parser_entry_handler {
@@ -92,26 +97,26 @@ struct rgmsg_parser_entry_handler {
 struct rgmsg_parser_entry_handler rgmsg_entry_handlers [];
 
 #define SUBMIT_ENTRY(p) \
-	do { \
-		if (p->options & PSR_ENTRY_APPEND_NULL) \
-			((p)->entry[entry_pos]) = '\0'; \
-		if (cb1 && entry_pos == 0) \
-			pstate = cb1(NULL, entry_pos, data); \
-		else if (cb1) \
-			pstate = cb1(p->entry, entry_pos, data); \
-		else \
-			pstate = PSR_ENTRY_ENDED; \
-		entry_pos = 0; \
-	} while (0)
+    do { \
+        if (p->options & PSR_ENTRY_APPEND_NULL) \
+            ((p)->entry[entry_pos]) = '\0'; \
+        if (cb1 && entry_pos == 0) \
+            pstate = cb1(NULL, entry_pos, data); \
+        else if (cb1) \
+            pstate = cb1(p->entry, entry_pos, data); \
+        else \
+            pstate = PSR_ENTRY_ENDED; \
+        entry_pos = 0; \
+    } while (0)
 
 #define SUBMIT_MESSAGE(p, c) \
-	do { \
-		if (cb2) \
-			pstate = cb2(c, data); \
-		else \
-			pstate = PSR_MSG_NOT_BEGUN; \
-		entry_pos = 0; \
-	} while (0)
+    do { \
+        if (cb2) \
+            pstate = cb2(c, data); \
+        else \
+            pstate = PSR_MSG_NOT_BEGUN; \
+        entry_pos = 0; \
+    } while (0)
 
 #define SUBMIT_CHAR(p, c) ((p)->entry[entry_pos++] = (c))
 
@@ -130,61 +135,61 @@ bool rgmsg_mode_check(unsigned char m);
  */
 int u_ascii_to_hex(unsigned char *src, unsigned char *dst, int dstlen)
 {
-	unsigned char c;
+    unsigned char c;
 
-	if (!src || !dst)
-		return -1;
+    if (!src || !dst)
+        return -1;
 
-	for (; dstlen>0;) {
-		c = *src;
-		if(c>='0' && c<='9') {
-			c = c - '0';
-		}
-		else if(c>='A' && c<='F') {
-			c = c - 'A' + 0x0A;
-		}
-		else if(c>='a' && c<='f') {
-			c = c - 'a' + 0x0A;
-		}
-		else {
-			/*Invalid char*/
-			break;
-		}
-		/*half byte high*/
-		*dst = c<<4;
+    for (; dstlen>0;) {
+        c = *src;
+        if(c>='0' && c<='9') {
+            c = c - '0';
+        }
+        else if(c>='A' && c<='F') {
+            c = c - 'A' + 0x0A;
+        }
+        else if(c>='a' && c<='f') {
+            c = c - 'a' + 0x0A;
+        }
+        else {
+            /*Invalid char*/
+            break;
+        }
+        /*half byte high*/
+        *dst = c<<4;
 
-		c = *(++src);
-		if(c>='0' && c<='9') {
-			c = c - '0';
-		}
-		else if(c>='A' && c<='F') {
-			c = c - 'A' + 0x0A;
-		}
-		else if(c>='a' && c<='f') {
-			c = c - 'a' + 0x0A;
-		}
-		else {
-			/*Invalid char*/
-			break;
-		}
-		/*half byte low*/
-		*dst = (*dst) | c;
+        c = *(++src);
+        if(c>='0' && c<='9') {
+            c = c - '0';
+        }
+        else if(c>='A' && c<='F') {
+            c = c - 'A' + 0x0A;
+        }
+        else if(c>='a' && c<='f') {
+            c = c - 'a' + 0x0A;
+        }
+        else {
+            /*Invalid char*/
+            break;
+        }
+        /*half byte low*/
+        *dst = (*dst) | c;
 
-		src++;
-		dst++;
-		dstlen--; /*1 hex char ok*/
-	}
+        src++;
+        dst++;
+        dstlen--; /*1 hex char ok*/
+    }
 
-	return dstlen;
+    return dstlen;
 }
 
 int rg_string_to_short(unsigned char *src, unsigned char *dst)
 {
-	int rv;
-	rv = u_ascii_to_hex(src, dst, 2);
-	/*revert bytes order*/
-	*(short*)dst = ntohs(*(short*)dst);
-	return rv;
+    int rv;
+    rv = u_ascii_to_hex(src, dst, 2);
+    /*revert bytes order*/
+    *(short*)dst = ntohs(*(short*)dst);
+    return rv;
 }
 
 static char *rgmsg_parser_errors[] = {
@@ -248,7 +253,7 @@ int rgmsg_parser_init(struct rgmsg_parser *p, int options)
 
 void rgmsg_parser_free(struct rgmsg_parser *p)
 {
-    /* Free the entry_buffer of csv_parser object */
+    /* Free the entry buffer of message entry object */
     if (p == NULL)
         return;
 
@@ -351,9 +356,26 @@ static int rgmsg_parser_counter_increase_buffer(struct rgmsg_parser_counter *c)
     return 0;
 }
 
+void rgmsg_parser_counter_free(struct rgmsg_parser_counter *c)
+{
+    /* Free the text buffer of text string object */
+    if (c == NULL)
+        return;
+
+    if (c->text)
+        free(c->text);
+
+    c->message = NULL;
+    c->parser = NULL;
+    c->text = NULL;
+    c->text_size = 0;
+
+    return;
+}
+
 bool rgmsg_is_valid_character(unsigned char c)
 {
-	fprintf(stdout, "rgmsg_is_valid_character()\n");
+    fprintf(stdout, "rgmsg_is_valid_character()\n");
     if (c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F')
         return true;
     return false;
@@ -372,7 +394,7 @@ size_t rgmsg_parse(struct rgmsg_parser *p,
     size_t ommitedchars = 0;
     struct rgmsg_parser_counter *ctr;
 
-	fprintf(stdout, "rg_message_parse()\n");
+    fprintf(stdout, "rg_message_parse()\n");
     ctr = (struct rgmsg_parser_counter *)data;
 
     /* Store key entrys into local variables for performance */
@@ -402,10 +424,10 @@ size_t rgmsg_parse(struct rgmsg_parser *p,
         switch (pstate) {
         case PSR_MSG_NOT_BEGUN:
         case PSR_ENTRY_NOT_BEGUN:
-        	fprintf(stdout, "PSR_MSG_NOT_BEGUN | PSR_ENTRY_NOT_BEGUN\n");
-        	//ctr->entry_counter = 0;
-        	rgmsg_parser_counter_reset(ctr);
-        	
+            fprintf(stdout, "PSR_MSG_NOT_BEGUN | PSR_ENTRY_NOT_BEGUN\n");
+            //ctr->entry_counter = 0;
+            rgmsg_parser_counter_reset(ctr);
+
             if (c == delim) { /* Vertical line */
                 pstate = PSR_ENTRY_BEGUN;
             }
@@ -415,7 +437,7 @@ size_t rgmsg_parse(struct rgmsg_parser *p,
             }
             break;
         case PSR_ENTRY_BEGUN:
-        	fprintf(stdout, "PSR_ENTRY_BEGUN\n");
+            fprintf(stdout, "PSR_ENTRY_BEGUN\n");
             if (c == delim) { /* 1st Vertical line */
                 /**
                  * Submiting shall check length & content validity with current
@@ -439,7 +461,7 @@ size_t rgmsg_parse(struct rgmsg_parser *p,
             }
             break;
         case PSR_ENTRY_ENDED:
-        	fprintf(stdout, "PSR_ENTRY_ENDED\n");
+            fprintf(stdout, "PSR_ENTRY_ENDED\n");
             if (c == delim) { /* 2nd Vertical line */
                 pstate = PSR_MSG_MIGHT_HAVE_ENDED;
             }
@@ -454,15 +476,15 @@ size_t rgmsg_parse(struct rgmsg_parser *p,
             }
             break;
         case PSR_MSG_MIGHT_HAVE_ENDED:
-        	fprintf(stdout, "PSR_MSG_MIGHT_HAVE_ENDED\n");
+            fprintf(stdout, "PSR_MSG_MIGHT_HAVE_ENDED\n");
 
             SUBMIT_MESSAGE(p, (unsigned char)c);
             break;
         default:
-        	fprintf(stdout, "unknown branch\n");
+            fprintf(stdout, "unknown branch\n");
             break;
         }
-        
+
         fprintf(stdout, "[%c]\n", c);
 
     }
@@ -477,37 +499,37 @@ int rgmsg_entry_handle_uchar(void *data,
 {
     struct rgmsg_parser_counter *ctr;
 
-	fprintf(stdout, "rgmsg_entry_handle_uchar()\n");
+    fprintf(stdout, "rgmsg_entry_handle_uchar()\n");
     ctr = (struct rgmsg_parser_counter *)data;
 
-	if (entry_len != 1)
-		return PSR_EENTRY_LENGTH;
-	if (rgmsg_mode_check(*(unsigned char *)entry) == false)
-		return PSR_EENTRY_DATA;
-		
-	/* drill a character */
+    if (entry_len != 1)
+        return PSR_EENTRY_LENGTH;
+    if (rgmsg_mode_check(*(unsigned char *)entry) == false)
+        return PSR_EENTRY_DATA;
+
+    /* drill a character */
     *(unsigned char *)dst = *(unsigned char *)entry;
 
-	return PSR_SUCCESS;
+    return PSR_SUCCESS;
 }
 
 int rgmsg_entry_handle_ushort(void *data,
                               void *entry,
-                              size_t entry_len, 
+                              size_t entry_len,
                               void *dst)
 {
     struct rgmsg_parser_counter *ctr;
 
-	fprintf(stdout, "rgmsg_entry_handle_ushort()\n");
+    fprintf(stdout, "rgmsg_entry_handle_ushort()\n");
     ctr = (struct rgmsg_parser_counter *)data;
 
-	if (entry_len != 4)
-		return PSR_EENTRY_LENGTH;
-	
-	if (rg_string_to_short((char *)entry, (unsigned char*)dst) != 0)
-		return PSR_EENTRY_DATA;
-	
-	return PSR_SUCCESS;
+    if (entry_len != 4)
+        return PSR_EENTRY_LENGTH;
+
+    if (rg_string_to_short((char *)entry, (unsigned char*)dst) != 0)
+        return PSR_EENTRY_DATA;
+
+    return PSR_SUCCESS;
 }
 
 int rgmsg_entry_handle_string(void *data,
@@ -518,7 +540,7 @@ int rgmsg_entry_handle_string(void *data,
     int rv;
     struct rgmsg_parser_counter *ctr;
 
-	fprintf(stdout, "rgmsg_entry_handle_string(len %d)\n", entry_len);
+    fprintf(stdout, "rgmsg_entry_handle_string(len %d)\n", entry_len);
     ctr = (struct rgmsg_parser_counter *)data;
 
     /* length check */
@@ -530,17 +552,17 @@ int rgmsg_entry_handle_string(void *data,
     if (rv != 0)
         return PSR_EENTRY_DATA;
 
-	return PSR_SUCCESS;
+    return PSR_SUCCESS;
 }
 
 int rgmsg_parser_counter_append(struct rgmsg_parser_counter *ctr, void *data, size_t dlen)
 {
-	if (!ctr)
-		return -1;
-	if (!data || dlen == 0)
-		return 0;
-		
-	/* Raw message text data buffer size check */
+    if (!ctr)
+        return -1;
+    if (!data || dlen == 0)
+        return 0;
+
+    /* Raw message text data buffer size check */
     if (!ctr->text_pos || ctr->text_pos >= ctr->text_size-1) {
         if (rgmsg_parser_counter_increase_buffer(ctr) != 0) {
             fprintf(stderr, "ETOOBIG\n");
@@ -558,79 +580,79 @@ int rgmsg_parser_counter_append(struct rgmsg_parser_counter *ctr, void *data, si
 
 int rgmsg_parser_counter_reset(struct rgmsg_parser_counter *ctr)
 {
-	if (!ctr)
-		return -1;
-		
-	ctr->mstate = MSG_INCOMPLETE;
-	ctr->text_pos = 0;
-	ctr->entry_counter = 0;
-	if (ctr->text && ctr->text_size > 0) {
-		ctr->text[0] = '\0';
-	}
-	
-	return 0;
+    if (!ctr)
+        return -1;
+
+    ctr->mstate = MSG_INCOMPLETE;
+    ctr->text_pos = 0;
+    ctr->entry_counter = 0;
+    if (ctr->text && ctr->text_size > 0) {
+        ctr->text[0] = '\0';
+    }
+
+    return 0;
 }
 
 int rgmsg_parse_entry_callback(void *entry, size_t entry_len, void *data)
 {
-	int rv;
-	struct rgmsg_parser_counter *ctr;
+    int rv;
+    struct rgmsg_parser_counter *ctr;
     struct rgmsg_parser_entry_handler *eh;
     struct rg_msg *msg;
 
-	fprintf(stdout, "rgmsg_parse_entry_handler()\n");
+    fprintf(stdout, "rgmsg_parse_entry_handler()\n");
     ctr = (struct rgmsg_parser_counter *)data;
     msg = (struct rg_msg *)ctr->message;
-    
+
     do {
-    	rv = PSR_EPARSE;
+        rv = PSR_EPARSE;
 
-    	/* It is a valid mode field , we reset the message state */
-    	if (entry_len == 1 && rgmsg_mode_check(*(char *)entry)) {
-    		/* Short cut to a new entry */
-    		//ctr->entry_counter = 0;
-    		rgmsg_parser_counter_reset(ctr);
-    	}
+        /* It is a valid mode field , we reset the message state */
+        if (entry_len == 1 && rgmsg_mode_check(*(char *)entry)) {
+            /* Short cut to a new entry */
+            //ctr->entry_counter = 0;
+            rgmsg_parser_counter_reset(ctr);
+        }
 
-    	if (ctr->entry_counter < 0 || ctr->entry_counter > PSR_ENTRIES-1) {
-    		/* Invalid/Too-many entries */
-    		rv = PSR_EPARSE;
-    		break;
-		}
-		
-		/* run handlers for each entry */
-		eh = &rgmsg_entry_handlers[ctr->entry_counter];
-		rv = eh->handler(data, entry, entry_len, (void*)(((char*)msg) + eh->offset));
-		
-	} while (0);
-	
-	if (rv == PSR_SUCCESS) {
+        if (ctr->entry_counter < 0 || ctr->entry_counter > PSR_ENTRIES-1) {
+            /* Invalid/Too-many entries */
+            rv = PSR_EPARSE;
+            break;
+        }
+
+        /* run handlers for each entry */
+        eh = &rgmsg_entry_handlers[ctr->entry_counter];
+        rv = eh->handler(data, entry, entry_len, (void*)(((char*)msg) + eh->offset));
+
+    } while (0);
+
+    if (rv == PSR_SUCCESS) {
         /* entry good, goto next entry */
         fprintf(stdout, "string ok\n");
         /* Raw message text data buffer size check */
         rgmsg_parser_counter_append(ctr, "|", 1);
         rgmsg_parser_counter_append(ctr, entry, entry_len);
-        
+
         ctr->entry_counter++;
         return PSR_ENTRY_ENDED;
-	}
-	else {
+    }
+    else {
         /* reset message state */
         //ctr->mstate = MSG_INCOMPLETE;
         //ctr->entry_counter = 0;
         rgmsg_parser_counter_reset(ctr);
         //return PSR_MSG_NOT_BEGUN;
         return PSR_ENTRY_BEGUN;
-	}
+    }
 }
 
 int rgmsg_parse_message_callback(int c, void *data)
 {
-	int pstate;
+    int pstate;
     struct rgmsg_parser *psr;
     struct rgmsg_parser_counter *ctr;
 
-	fprintf(stdout, "rgmsg_message_handle()\n");
+    fprintf(stdout, "rgmsg_message_handle()\n");
     ctr = (struct rgmsg_parser_counter *)data;
     psr = ctr->parser;
 
@@ -641,7 +663,7 @@ int rgmsg_parse_message_callback(int c, void *data)
 
     /* TODO: handle message here */
     if (ctr->mstate == MSG_COMPLETE) {
-    	fprintf(stdout, "===message ok===\n");
+        fprintf(stdout, "===message ok===\n");
         /* Raw message text data buffer size check */
         rgmsg_parser_counter_append(ctr, "||\n", 3);
         ctr->text[ctr->text_pos] = '\0';
@@ -662,7 +684,7 @@ int rgmsg_parse_message_callback(int c, void *data)
         fprintf(stdout, "PSR_MSG_NOT_BEGUN\n");
     }
 
-	return pstate;
+    return pstate;
 }
 
 struct rgmsg_parser_entry_handler rgmsg_entry_handlers [] = {
@@ -678,17 +700,17 @@ struct rgmsg_parser_entry_handler rgmsg_entry_handlers [] = {
     },
     {
         .offset  = offsetof(struct rg_msg, port),
-        .size	 = MEMBER_SIZE(rg_msg, port),
+        .size    = MEMBER_SIZE(rg_msg, port),
         .handler = rgmsg_entry_handle_ushort,
     },
     {
         .offset  = offsetof(struct rg_msg, command),
-        .size	 = MEMBER_SIZE(rg_msg, command),
+        .size    = MEMBER_SIZE(rg_msg, command),
         .handler = rgmsg_entry_handle_ushort,
     },
     {
         .offset  = offsetof(struct rg_msg, para),
-        .size	 = MEMBER_SIZE(rg_msg, para),
+        .size    = MEMBER_SIZE(rg_msg, para),
         .handler = rgmsg_entry_handle_string,
     }
 };
@@ -714,40 +736,41 @@ bool rgmsg_mode_check(unsigned char m)
 
 int main(int argc, char *argv[])
 {
-	FILE *fp;
-	struct rgmsg_parser psr;
-	struct rgmsg_parser_counter ctr;
-	struct rg_msg msg;
-	char line[128];
-	
-	if (argc != 2) {
-		fprintf(stdout, "Usage: %s <filename>", argv[0]);
-		return 1;
-	}
-	
-	fp = fopen(argv[1], "r");
-	if (!fp) {
-		fprintf(stdout, "Usage: %s <filename>", argv[0]);
-		return 1;
-	}
-	
-	memset(line, 0, sizeof(line));
-	memset(&ctr, 0, sizeof(ctr));
-	memset(&msg, 0, sizeof(msg));
-	
-	ctr.message = &msg;
-	ctr.parser  = &psr;
-	rgmsg_parser_init(&psr, PSR_ENTRY_APPEND_NULL);
-	
-	while (fgets(line, sizeof(line), fp)) {
-		rgmsg_parse(&psr, line, strlen(line),
-		            rgmsg_parse_entry_callback,
-		            rgmsg_parse_message_callback,
-		            &ctr);
-		memset(line, 0, sizeof(line));
-	}
-	
-	rgmsg_parser_free(&psr);
-	
-	return 0;
+    FILE *fp;
+    struct rgmsg_parser psr;
+    struct rgmsg_parser_counter ctr;
+    struct rg_msg msg;
+    char line[128];
+
+    if (argc != 2) {
+        fprintf(stdout, "Usage: %s <filename>", argv[0]);
+        return 1;
+    }
+
+    fp = fopen(argv[1], "r");
+    if (!fp) {
+        fprintf(stdout, "Usage: %s <filename>", argv[0]);
+        return 1;
+    }
+
+    memset(line, 0, sizeof(line));
+    memset(&ctr, 0, sizeof(ctr));
+    memset(&msg, 0, sizeof(msg));
+
+    ctr.message = &msg;
+    ctr.parser  = &psr;
+    rgmsg_parser_init(&psr, PSR_ENTRY_APPEND_NULL);
+
+    while (fgets(line, sizeof(line), fp)) {
+        rgmsg_parse(&psr, line, strlen(line),
+                    rgmsg_parse_entry_callback,
+                    rgmsg_parse_message_callback,
+                    &ctr);
+        memset(line, 0, sizeof(line));
+    }
+
+    rgmsg_parser_counter_free(&ctr);
+    rgmsg_parser_free(&psr);
+
+    return 0;
 }
